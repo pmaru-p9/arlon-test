@@ -1,0 +1,21 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pmaru-arlon-0809-eks-new-1-xenial-static
+  namespace: argocd
+  finalizers:
+  # This solves issue #17
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+  destination:
+    name: pmaru-arlon-0809-eks-new-1
+    namespace: default
+  project: default
+  source:
+    repoURL: https://github.com/pmaru-p9/arlon-test.git
+    path: clusters/pmaru-arlon-0809-eks-new-1/workload/xenial-static
+    targetRevision: HEAD
