@@ -26,9 +26,6 @@ spec:
   region: {{ .Values.global.region }}
   sshKeyName: {{ .Values.global.sshKeyName }}
   version: {{ .Values.global.kubernetesVersion }}
-  identityRef:
-    kind: AWSClusterStaticIdentity
-    name: {{ .Values.global.DUcloudProvider }}
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
