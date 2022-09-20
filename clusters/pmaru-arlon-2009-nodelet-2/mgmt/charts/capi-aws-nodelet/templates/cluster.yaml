@@ -10,7 +10,7 @@ spec:
         - {{ .Values.global.podCidrBlock }}
     services:
       cidrBlocks:
-        - {{ .Values.global.servicesCidrBlock }}
+        - {{ .Values.global.podCidrBlock }}
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: NodeletControlPlane
@@ -28,16 +28,12 @@ metadata:
 spec:
   region: {{ .Values.global.region }}
   sshKeyName: {{ .Values.global.sshKeyName }}
-  identityRef:
-    kind: AWSClusterStaticIdentity
-    name: {{ .Values.global.DUcloudProvider }}
   controlPlaneLoadBalancer:
     healthCheckProtocol: TCP
   # Optional: Add additional tags to aws resources
   # Below tags will be added to all the aws resources.
   additionalTags:
     ClusterName: {{ .Values.global.clusterName }}
-    DuFQDN: {{ .Values.global.dufqdn }}
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: NodeletControlPlane
@@ -50,14 +46,12 @@ spec:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: AWSMachineTemplate
       name: {{ .Values.global.clusterName }}-control-plane
-    nodeletConfigSpec: 
+    nodeletConfigSpec: {}
       # Uncomment to enable HTTPProxy
       # httpProxy:
-      #   proxy: ""
-      labels:
-        key: value
-  replicas: 3
-  version: {{ .Values.global.kubernetesVersion }}
+    #   proxy: ""
+  replicas: 1
+  version: v1.22.9
   cni:
     calico:
       natOutgoing: true
@@ -82,10 +76,6 @@ spec:
       rootVolume:
         size: 50
         type: gp3
-      nonRootVolumes:
-        - size: 100
-          type: gp3
-          deviceName: /dev/xvdb
       ami:
         id: ami-0b99000c6e2e4f2bf
       iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
@@ -97,6 +87,11 @@ kind: MachineDeployment
 metadata:
   name: {{ .Values.global.clusterName }}-md-0
   namespace: {{ .Values.global.clusterName }}
+  {{- if .Values.global.clusterAutoscalerEnabled }}
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "{{ .Values.global.clusterAutoscalerMinNodes }}"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "{{ .Values.global.clusterAutoscalerMaxNodes }}"
+  {{- end }}
 spec:
   clusterName: {{ .Values.global.clusterName }}
   replicas: {{ .Values.global.nodeCount }}
@@ -132,10 +127,6 @@ spec:
       rootVolume:
         size: 50
         type: gp3
-      nonRootVolumes:
-        - size: 100
-          type: gp3
-          deviceName: /dev/xvdb
       ami:
         id: ami-0b99000c6e2e4f2bf
       iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
@@ -149,13 +140,4 @@ metadata:
   namespace: {{ .Values.global.clusterName }}
 spec:
   template:
-    spec: 
-      # Uncomment to enable HTTPProxy
-      # httpProxy:
-      #   proxy: ""
-      labels:
-        key: value
-      taints:
-        - key: "key"
-          value: "val"
-          effect: PreferNoSchedule
+    spec: {}

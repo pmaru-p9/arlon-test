@@ -30,9 +30,6 @@ dependencies:
   - name: capi-aws-kubeadm
     tags:
       - capi-aws-kubeadm
-  - name: capi-aws-nodelet
-    tags:
-      - capi-aws-nodelet
   - name: xplane-aws-eks
     tags:
       - xplane-aws-eks
