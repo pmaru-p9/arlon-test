@@ -1,0 +1,27 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pmaru-2109-arlon-nodelet-d1-profile-dynamic-1
+  namespace: argocd
+  finalizers:
+  # This solves issue #17
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  project: default
+  source:
+    repoURL: https://github.com/pmaru-p9/arlon-test.git
+    path: profiles/dynamic-1/mgmt
+    targetRevision: HEAD
+    helm:
+      parameters:
+      - name: clusterName
+        value: pmaru-2109-arlon-nodelet-d1
+      - name: profileAppName
+        value: pmaru-2109-arlon-nodelet-d1-profile-dynamic-1
