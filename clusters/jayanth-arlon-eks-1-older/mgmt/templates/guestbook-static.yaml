@@ -1,0 +1,21 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jayanth-arlon-eks-1-older-guestbook-static
+  namespace: argocd
+  finalizers:
+  # This solves issue #17
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+  destination:
+    name: jayanth-arlon-eks-1-older
+    namespace: default
+  project: default
+  source:
+    repoURL: https://github.com/pmaru-p9/arlon-test.git
+    path: clusters/jayanth-arlon-eks-1-older/workload/guestbook-static
+    targetRevision: HEAD
