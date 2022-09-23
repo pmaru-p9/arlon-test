@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: eks-new-xenial-static
+  name: eks-new-profile-dynamic-2
   namespace: argocd
   finalizers:
   # This solves issue #17
@@ -12,10 +12,16 @@ spec:
     automated:
       prune: true
   destination:
-    name: eks-new
-    namespace: default
+    server: https://kubernetes.default.svc
+    namespace: argocd
   project: default
   source:
     repoURL: https://github.com/pmaru-p9/arlon-test.git
-    path: clusters/eks-new/workload/xenial-static
+    path: profiles/dynamic-2/mgmt
     targetRevision: HEAD
+    helm:
+      parameters:
+      - name: clusterName
+        value: eks-new
+      - name: profileAppName
+        value: eks-new-profile-dynamic-2
