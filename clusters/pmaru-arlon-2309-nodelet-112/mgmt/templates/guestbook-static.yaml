@@ -1,0 +1,21 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pmaru-arlon-2309-nodelet-112-guestbook-static
+  namespace: argocd
+  finalizers:
+  # This solves issue #17
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+  destination:
+    name: pmaru-arlon-2309-nodelet-112
+    namespace: default
+  project: default
+  source:
+    repoURL: https://github.com/pmaru-p9/arlon-test.git
+    path: clusters/pmaru-arlon-2309-nodelet-112/workload/guestbook-static
+    targetRevision: HEAD
