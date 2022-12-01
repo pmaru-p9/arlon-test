@@ -84,7 +84,6 @@ spec:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: EKSConfig
           name: capi-quickstart-pool-0
-          namespace: default
         dataSecretName: capi-quickstart-pool-0
       clusterName: capi-quickstart
       infrastructureRef:
