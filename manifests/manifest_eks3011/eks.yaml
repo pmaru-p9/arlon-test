@@ -80,7 +80,12 @@ spec:
   template:
     spec:
       bootstrap:
-        dataSecretName: ""
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: EKSConfig
+          name: capi-quickstart-pool-0
+          namespace: default
+        dataSecretName: capi-quickstart-pool-0
       clusterName: capi-quickstart
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
