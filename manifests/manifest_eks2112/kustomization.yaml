@@ -1,0 +1,5 @@
+resources:
+- eks_124
+
+configurations:
+- configurations.yaml
