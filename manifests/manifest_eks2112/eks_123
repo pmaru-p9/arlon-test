@@ -1,0 +1,250 @@
+# Update the below constant variables in this file as per your environment.
+# arlon-eks
+# us-west-2
+# pmaru-aws1
+# v1.24
+# test-du-bare-os-u20-2475685.platform9.horse/
+#
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: arlon-eks
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: AWSManagedControlPlane
+    name: arlon-eks-control-plane
+  infrastructureRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: AWSManagedControlPlane
+    name: arlon-eks-control-plane
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: AWSManagedControlPlane
+metadata:
+  name: arlon-eks-control-plane
+  namespace: default
+spec:
+  region: us-west-2
+  sshKeyName: pmaru-aws1
+  version: v1.24
+  # If eksClusterName is not specified EKS cluster will be create with name `default_arlon-eks-control-plane`
+  eksClusterName: arlon-eks
+  addons:
+    - name: vpc-cni
+      version: v1.12.0-eksbuild.1
+      conflictResolution: overwrite
+    - name: coredns
+      version: v1.8.7-eksbuild.3
+      conflictResolution: overwrite
+    - name: kube-proxy
+      version: v1.24.7-eksbuild.2
+      conflictResolution: overwrite
+    - name: aws-ebs-csi-driver
+      version: v1.13.0-eksbuild.3
+      conflictResolution: overwrite
+  additionalTags:
+    ClusterName: arlon-eks
+    DuFQDN: test-du-bare-os-u20-2475685.platform9.horse/
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: arlon-eks-md-0
+  namespace: default
+spec:
+  clusterName: arlon-eks
+  replicas: 1
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: EKSConfigTemplate
+          name: arlon-eks-md-0
+      clusterName: arlon-eks
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AWSMachineTemplate
+        name: arlon-eks-md-0
+      version: v1.24
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AWSMachineTemplate
+metadata:
+  name: arlon-eks-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      rootVolume:
+        size: 50
+        type: gp3
+      iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+      instanceType: t2.medium
+      sshKeyName: pmaru-aws1
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: EKSConfigTemplate
+metadata:
+  name: arlon-eks-md-0
+  namespace: default
+spec:
+  template: {}
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  name: arlon-eks-pool-0
+  namespace: default
+spec:
+  clusterName: arlon-eks
+  replicas: 1
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: EKSConfig
+          name: arlon-eks-pool-0
+          namespace: default
+        dataSecretName: arlon-eks-pool-0
+      clusterName: arlon-eks
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AWSManagedMachinePool
+        name: arlon-eks-pool-0
+      version: v1.24
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AWSManagedMachinePool
+metadata:
+  name: arlon-eks-pool-0
+  namespace: default
+spec:
+  updateConfig:
+    maxUnavailable: 1
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  name: arlon-eks-pool-1
+  namespace: default
+spec:
+  clusterName: arlon-eks
+  replicas: 1
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: EKSConfig
+          name: arlon-eks-pool-1
+      clusterName: arlon-eks
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AWSMachinePool
+        name: arlon-eks-pool-1
+      version: v1.24
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AWSMachinePool
+metadata:
+  name: arlon-eks-pool-1
+  namespace: default
+spec:
+  availabilityZones:
+  - us-west-2c
+  awsLaunchTemplate:
+    instanceType: t2.medium
+    sshKeyName: pmaru-aws1
+    iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+  maxSize: 3
+  minSize: 1
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: EKSConfig
+metadata:
+  name: arlon-eks-pool-1
+  namespace: default
+spec: {}
+---
+apiVersion: sunpike.platform9.com/v1alpha2
+kind: ClusterAddon
+metadata:
+  labels:
+    sunpike.pf9.io/cluster: arlon-eks
+    type: metrics-server
+    clusterName: arlon-eks
+  name: arlon-eks-metrics-server
+  namespace: default
+spec:
+  override:
+    params:
+      - name: metricsCpuLimit
+        value: 100m
+      - name: metricsMemoryLimit
+        value: 300Mi
+  type: metrics-server
+  version: 0.5.0
+  watch: true
+---
+apiVersion: sunpike.platform9.com/v1alpha2
+kind: ClusterAddon
+metadata:
+  labels:
+    sunpike.pf9.io/cluster: arlon-eks
+    type: kubernetes-dashboard
+    clusterName: arlon-eks
+  name: arlon-eks-kubernetes-dashboard
+  namespace: default
+spec:
+  override: {}
+  type: kubernetes-dashboard
+  version: 2.4.0
+  watch: true
+---
+apiVersion: sunpike.platform9.com/v1alpha2
+kind: ClusterAddon
+metadata:
+  labels:
+    sunpike.pf9.io/cluster: arlon-eks
+    type: cluster-auto-scaler-capi
+    clusterName: arlon-eks
+  name: arlon-eks-cluster-auto-scaler-capi
+  namespace: default
+spec:
+  override:
+    params:
+      - name: clusterAutoscalerNamespace
+        value: kube-system
+      - name: clusterNamespace
+        value: default
+  type: cluster-auto-scaler-capi
+  version: 1.23.1
+  watch: true
+---
+apiVersion: sunpike.platform9.com/v1alpha2
+kind: ClusterAddon
+metadata:
+  labels:
+    sunpike.pf9.io/cluster: arlon-eks
+    type: monitoring
+    clusterName: arlon-eks
+  name: arlon-eks-monitoring
+  namespace: default
+spec:
+  override:
+    params:
+      - name: retentionTime
+        value: 7d
+  type: monitoring
+  version: 0.57.0
+  watch: true
