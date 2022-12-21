@@ -103,7 +103,6 @@ spec:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: EKSConfig
           name: arlon-eks-pool-0
-          namespace: default
         dataSecretName: arlon-eks-pool-0
       clusterName: arlon-eks
       infrastructureRef:
