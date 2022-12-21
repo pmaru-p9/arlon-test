@@ -2,7 +2,7 @@
 # arlon-eks
 # us-west-2
 # pmaru-aws1
-# v1.24
+# v1.23
 # test-du-bare-os-u20-2475685.platform9.horse/
 #
 apiVersion: cluster.x-k8s.io/v1beta1
@@ -32,7 +32,7 @@ metadata:
 spec:
   region: us-west-2
   sshKeyName: pmaru-aws1
-  version: v1.24
+  version: v1.23
   # If eksClusterName is not specified EKS cluster will be create with name `default_arlon-eks-control-plane`
   eksClusterName: arlon-eks
   addons:
@@ -43,7 +43,7 @@ spec:
       version: v1.8.7-eksbuild.3
       conflictResolution: overwrite
     - name: kube-proxy
-      version: v1.24.7-eksbuild.2
+      version: v1.23.7-eksbuild.2
       conflictResolution: overwrite
     - name: aws-ebs-csi-driver
       version: v1.13.0-eksbuild.3
@@ -74,7 +74,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AWSMachineTemplate
         name: arlon-eks-md-0
-      version: v1.24
+      version: v1.23
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AWSMachineTemplate
@@ -121,7 +121,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AWSManagedMachinePool
         name: arlon-eks-pool-0
-      version: v1.24
+      version: v1.23
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AWSManagedMachinePool
@@ -152,7 +152,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AWSMachinePool
         name: arlon-eks-pool-1
-      version: v1.24
+      version: v1.23
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AWSMachinePool
@@ -175,76 +175,3 @@ metadata:
   name: arlon-eks-pool-1
   namespace: default
 spec: {}
----
-apiVersion: sunpike.platform9.com/v1alpha2
-kind: ClusterAddon
-metadata:
-  labels:
-    sunpike.pf9.io/cluster: arlon-eks
-    type: metrics-server
-    clusterName: arlon-eks
-  name: arlon-eks-metrics-server
-  namespace: default
-spec:
-  override:
-    params:
-      - name: metricsCpuLimit
-        value: 100m
-      - name: metricsMemoryLimit
-        value: 300Mi
-  type: metrics-server
-  version: 0.5.0
-  watch: true
----
-apiVersion: sunpike.platform9.com/v1alpha2
-kind: ClusterAddon
-metadata:
-  labels:
-    sunpike.pf9.io/cluster: arlon-eks
-    type: kubernetes-dashboard
-    clusterName: arlon-eks
-  name: arlon-eks-kubernetes-dashboard
-  namespace: default
-spec:
-  override: {}
-  type: kubernetes-dashboard
-  version: 2.4.0
-  watch: true
----
-apiVersion: sunpike.platform9.com/v1alpha2
-kind: ClusterAddon
-metadata:
-  labels:
-    sunpike.pf9.io/cluster: arlon-eks
-    type: cluster-auto-scaler-capi
-    clusterName: arlon-eks
-  name: arlon-eks-cluster-auto-scaler-capi
-  namespace: default
-spec:
-  override:
-    params:
-      - name: clusterAutoscalerNamespace
-        value: kube-system
-      - name: clusterNamespace
-        value: default
-  type: cluster-auto-scaler-capi
-  version: 1.23.1
-  watch: true
----
-apiVersion: sunpike.platform9.com/v1alpha2
-kind: ClusterAddon
-metadata:
-  labels:
-    sunpike.pf9.io/cluster: arlon-eks
-    type: monitoring
-    clusterName: arlon-eks
-  name: arlon-eks-monitoring
-  namespace: default
-spec:
-  override:
-    params:
-      - name: retentionTime
-        value: 7d
-  type: monitoring
-  version: 0.57.0
-  watch: true
